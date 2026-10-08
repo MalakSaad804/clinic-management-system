@@ -1,0 +1,34 @@
+# Run the whole app locally with one command:  docker compose up --build
+# Then open http://localhost:5000   (seed demo data: docker compose exec app node scripts/seed.js)
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      MONGO_URI: mongodb://mongo:27017/clinic
+      JWT_SECRET: ${JWT_SECRET:-change-me-local-access-secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-local-refresh-secret}
+      CORS_ORIGIN: http://localhost:5000
+    volumes:
+      - uploads:/app/uploads
+
+volumes:
+  mongo-data:
+  uploads:

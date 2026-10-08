@@ -1,0 +1,23 @@
+# Render "Blueprint": describes the web service so Render can create it for you.
+# New > Blueprint > pick this GitHub repo. Then set the two values marked "sync: false" in the dashboard.
+services:
+  - type: web
+    name: brew-bean-clinic
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: false          # deploys are triggered by GitHub Actions (after tests pass) via a deploy hook
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI          # MongoDB Atlas connection string (free M0 cluster)
+        sync: false
+      - key: CORS_ORIGIN        # your Render URL, e.g. https://brew-bean-clinic.onrender.com
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CLINIC_TZ_OFFSET_MINUTES
+        value: "300"
